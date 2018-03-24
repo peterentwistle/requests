@@ -14,6 +14,10 @@ import Requests
 Requests.get("http://example.com") { response in
   print(response.text())
 }
+
+Requests.get("http://httpbin.org/ip") { response in
+  print(response.text())
+}
 ```
 
 ### Output
@@ -27,6 +31,12 @@ Requests.get("http://example.com") { response in
 ...
 ```
 
+```
+{
+  "origin": "127.0.0.1"
+}
+```
+
 ### JSON Decoding Example
 ```swift
 import Requests
@@ -37,13 +47,12 @@ struct IP: Decodable {
 
 Requests.get("http://httpbin.org/ip") { response in
   let json: IP = response.json()
+
   print(json.origin)
 }
 ```
 
 ### Output
 ```
-{
-  "origin": "127.0.0.1"
-}
+127.0.0.1
 ```
