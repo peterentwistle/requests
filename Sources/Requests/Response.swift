@@ -34,6 +34,11 @@ public protocol JSONDecodable {
     func json() -> String
 }
 
+public protocol HTTPResponse {
+    var headers: [String: String] { get }
+    var statusCode: Int { get }
+}
+
 // MARK: - Printable
 
 extension Response: Printable {
@@ -47,5 +52,17 @@ extension Response: Printable {
 extension Response: JSONDecodable {
     public func json<T: Decodable>() -> T {
         return try! JSONDecoder().decode(T.self, from: data!)
+    }
+}
+
+// MARK: - HTTPResponse
+
+extension Response: HTTPResponse {
+    public var headers: [String : String] {
+        return (response as! HTTPURLResponse).allHeaderFields as! [String: String]
+    }
+    
+    public var statusCode: Int {
+        return (response as! HTTPURLResponse).statusCode
     }
 }

@@ -65,8 +65,6 @@ class RequestsTests: XCTestCase {
         
         Requests.get("http://httpbin.org/ip") { response in
             let json: IP = response.json()
-            print(json.origin)
-            
             XCTAssertTrue(json.origin != "")
             
             expectation.fulfill()
@@ -75,4 +73,26 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    func testHeadersFromResponse() {
+        let expectation = XCTestExpectation(description: "Wait for get request")
+        
+        Requests.get("http://httpbin.org/ip") { response in
+            let headers = response.headers
+            XCTAssertTrue(headers["Content-Type"] == "application/json")
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
+    func testStatusCodeFromResponse() {
+        let expectation = XCTestExpectation(description: "Wait for get request")
+        
+        Requests.get("http://httpbin.org/ip") { response in
+            XCTAssertTrue(response.statusCode == 200)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
 }
