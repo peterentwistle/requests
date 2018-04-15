@@ -6,6 +6,14 @@
 
 Requests is a lightweight asynchronous HTTP Requests library written in Swift.
 
+#### Currently supported HTTP request methods
+- [Get](#examples)
+- [Post](#post-data)
+
+Further HTTP request methods are going to be implemented soon.
+
+---
+
 ## Examples:
 ### Basic usage
 ```swift
@@ -55,4 +63,13 @@ Requests.get("http://httpbin.org/ip") { response in
 ### Output
 ```
 127.0.0.1
+```
+
+---
+
+### Post data
+```Swift
+Requests.post("http://httpbin.org/post", data: ["key": "value"]) { response in
+    print(response.text())
+}
 ```

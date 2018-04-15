@@ -58,7 +58,7 @@ extension Response: JSONDecodable {
 // MARK: - HTTPResponse
 
 extension Response: HTTPResponse {
-    public var headers: [String : String] {
+    public var headers: [String: String] {
         return (response as! HTTPURLResponse).allHeaderFields as! [String: String]
     }
     

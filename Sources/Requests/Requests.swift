@@ -26,6 +26,10 @@ protocol Getable {
     static func get(_ url: String, completionHandler: @escaping (Response) -> ())
 }
 
+protocol Postable {
+    static func post(_ url: String, data: [String: String], completionHandler: @escaping (Response) -> ())
+}
+
 // MARK: - Getable
 
 extension Requests: Getable {
@@ -35,5 +39,35 @@ extension Requests: Getable {
                 completionHandler(Response(url: url, data: data, response: response, error: error))
             }
         }.resume()
+    }
+}
+
+// MARK: - Postable
+
+extension Requests: Postable {
+    public static func post(_ url: String, data: [String : String], completionHandler: @escaping (Response) -> ()) {
+        var request = URLRequest(url: URL(string: url)!)
+        request.httpMethod = "POST"
+        request.httpBody = data.bodyData()
+            
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let data = data {
+                completionHandler(Response(url: url, data: data, response: response, error: error))
+            }
+        }.resume()
+    }
+}
+
+// MARK: - Dictionary<String, String>
+
+extension Dictionary where Key == String, Value == String {
+    func bodyData() -> Data {
+        var data = [String]()
+        
+        for (key, value) in self {
+            data.append("\(key)=\(value)")
+        }
+        
+        return data.joined(separator: "&").data(using: .utf8)!
     }
 }
