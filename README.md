@@ -1,6 +1,6 @@
 
 # Requests
-![Swift](http://img.shields.io/badge/swift-4.0-brightgreen.svg)
+![Swift](http://img.shields.io/badge/swift-4.2-brightgreen.svg)
 [![Build Status](https://travis-ci.org/peterentwistle/requests.svg?branch=master)](https://travis-ci.org/peterentwistle/requests)
 [![Licence](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/peterentwistle/requests/blob/master/LICENSE)
 
