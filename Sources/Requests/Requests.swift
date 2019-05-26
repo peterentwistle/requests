@@ -21,39 +21,103 @@ import Foundation
 
 public struct Requests {}
 
-protocol Getable {
+private enum HttpMethod: String {
+    case get = "GET"
+    case post = "POST"
+    case put = "PUT"
+    case patch = "PATCH"
+    case delete = "DELETE"
+}
+
+public protocol Requestable {
+    /// Makes a GET request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - completionHandler: The completion handler to call when the request has completed.
     static func get(_ url: String, completionHandler: @escaping (Response) -> ())
+    
+    /// Makes a POST request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - data: The data to pass in the body of the request.
+    ///     - completionHandler: The completion handler to call when the request has completed.
+    static func post(_ url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ())
+    
+    /// Makes a PUT request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - data: The data to pass in the body of the request.
+    ///     - completionHandler: The completion handler to call when the request has completed.
+    static func put(_ url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ())
+    
+    /// Makes a PATCH request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - data: The data to pass in the body of the request.
+    ///     - completionHandler: The completion handler to call when the request has completed.
+    static func patch(_ url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ())
+    
+    /// Makes a DELETE request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - data: The data to pass in the body of the request.
+    ///     - completionHandler: The completion handler to call when the request has completed.
+    static func delete(_ url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ())
 }
 
-protocol Postable {
-    static func post(_ url: String, data: [String: String], completionHandler: @escaping (Response) -> ())
-}
-
-// MARK: - Getable
-extension Requests: Getable {
-    public static func get(_ url: String, completionHandler: @escaping (Response) -> ()) {
-        URLSession.shared.dataTask(with: URL(string: url)!) { data, response, error in
-            if let data = data {
-                completionHandler(Response(url: url, data: data, response: response, error: error))
-            }
-        }.resume()
-    }
-}
-
-// MARK: - Postable
-extension Requests: Postable {
-    public static func post(_ url: String, data: [String : String], completionHandler: @escaping (Response) -> ()) {
+extension Requestable {
+    private static func make(method: HttpMethod, url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ()) {
         var request = URLRequest(url: URL(string: url)!)
-        request.httpMethod = "POST"
-        request.httpBody = data.bodyData()
-            
+        request.httpMethod = method.rawValue
+        
+        if let data = data {
+            request.httpBody = data.bodyData()
+        }
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let data = data {
                 completionHandler(Response(url: url, data: data, response: response, error: error))
             }
         }.resume()
     }
+    
+    public static func get(_ url: String, completionHandler: @escaping (Response) -> ()) {
+        make(method: .get, url: url, data: nil) { response in
+            completionHandler(response)
+        }
+    }
+    
+    public static func post(_ url: String, data: [String : String]? = nil, completionHandler: @escaping (Response) -> ()) {
+        make(method: .post, url: url, data: data) { response in
+            completionHandler(response)
+        }
+    }
+    
+    public static func put(_ url: String, data: [String : String]? = nil, completionHandler: @escaping (Response) -> ()) {
+        make(method: .put, url: url, data: data) { response in
+            completionHandler(response)
+        }
+    }
+    
+    public static func patch(_ url: String, data: [String : String]? = nil, completionHandler: @escaping (Response) -> ()) {
+        make(method: .patch, url: url, data: data) { response in
+            completionHandler(response)
+        }
+    }
+    
+    public static func delete(_ url: String, data: [String : String]? = nil, completionHandler: @escaping (Response) -> ()) {
+        make(method: .delete, url: url, data: data) { response in
+            completionHandler(response)
+        }
+    }
 }
+
+extension Requests: Requestable {}
 
 // MARK: - Dictionary<String, String>
 extension Dictionary where Key == String, Value == String {
