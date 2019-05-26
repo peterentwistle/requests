@@ -27,7 +27,7 @@ public struct Response {
 }
 
 public protocol Printable {
-    func text() -> String
+    var text: String { get }
 }
 
 public protocol JSONDecodable {
@@ -41,7 +41,7 @@ public protocol HTTPResponse {
 
 // MARK: - Printable
 extension Response: Printable {
-    public func text() -> String {
+    public var text: String {
         return NSString(data: data!, encoding: String.Encoding.utf8.rawValue)! as String
     }
 }
