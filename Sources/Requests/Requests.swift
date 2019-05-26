@@ -19,8 +19,7 @@
 
 import Foundation
 
-public class Requests {
-}
+public struct Requests {}
 
 protocol Getable {
     static func get(_ url: String, completionHandler: @escaping (Response) -> ())
@@ -31,10 +30,9 @@ protocol Postable {
 }
 
 // MARK: - Getable
-
 extension Requests: Getable {
     public static func get(_ url: String, completionHandler: @escaping (Response) -> ()) {
-        URLSession.shared.dataTask(with: URL(string: url)!) { (data, response, error) in
+        URLSession.shared.dataTask(with: URL(string: url)!) { data, response, error in
             if let data = data {
                 completionHandler(Response(url: url, data: data, response: response, error: error))
             }
@@ -43,14 +41,13 @@ extension Requests: Getable {
 }
 
 // MARK: - Postable
-
 extension Requests: Postable {
     public static func post(_ url: String, data: [String : String], completionHandler: @escaping (Response) -> ()) {
         var request = URLRequest(url: URL(string: url)!)
         request.httpMethod = "POST"
         request.httpBody = data.bodyData()
             
-        URLSession.shared.dataTask(with: request) { (data, response, error) in
+        URLSession.shared.dataTask(with: request) { data, response, error in
             if let data = data {
                 completionHandler(Response(url: url, data: data, response: response, error: error))
             }
@@ -59,7 +56,6 @@ extension Requests: Postable {
 }
 
 // MARK: - Dictionary<String, String>
-
 extension Dictionary where Key == String, Value == String {
     func bodyData() -> Data {
         var data = [String]()

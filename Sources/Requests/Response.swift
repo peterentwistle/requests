@@ -40,7 +40,6 @@ public protocol HTTPResponse {
 }
 
 // MARK: - Printable
-
 extension Response: Printable {
     public func text() -> String {
         return NSString(data: data!, encoding: String.Encoding.utf8.rawValue)! as String
@@ -48,7 +47,6 @@ extension Response: Printable {
 }
 
 // MARK: - JSONDecodable
-
 extension Response: JSONDecodable {
     public func json<T: Decodable>() -> T {
         return try! JSONDecoder().decode(T.self, from: data!)
@@ -56,7 +54,6 @@ extension Response: JSONDecodable {
 }
 
 // MARK: - HTTPResponse
-
 extension Response: HTTPResponse {
     public var headers: [String: String] {
         return (response as! HTTPURLResponse).allHeaderFields as! [String: String]
