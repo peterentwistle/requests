@@ -23,16 +23,16 @@ Further HTTP request methods are going to be implemented soon.
 import Requests
 
 Requests.get("http://example.com") { response in
-  print(response.text())
+  print(response.text)
 }
 
 Requests.get("http://httpbin.org/ip") { response in
-  print(response.text())
+  print(response.text)
 }
 ```
 
 ### Output
-```
+```html
 <!doctype html>
 <html>
 <head>
@@ -42,7 +42,7 @@ Requests.get("http://httpbin.org/ip") { response in
 ...
 ```
 
-```
+```json
 {
   "origin": "127.0.0.1"
 }
@@ -74,58 +74,58 @@ Requests.get("http://httpbin.org/ip") { response in
 ### GET
 ```Swift
 Requests.get("http://httpbin.org/get") { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 
 ### POST
 ```Swift
 Requests.post("http://httpbin.org/post") { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 #### With data
 ```Swift
 Requests.post("http://httpbin.org/post", data: ["key": "value"]) { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 
 ### PUT
 ```Swift
 Requests.put("http://httpbin.org/put") { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 #### With data
 ```Swift
 Requests.put("http://httpbin.org/put", data: ["key": "value"]) { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 
 ### PATCH
 ```Swift
 Requests.patch("http://httpbin.org/patch") { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 #### With data
 ```Swift
 Requests.patch("http://httpbin.org/patch", data: ["key": "value"]) { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 
 ### DELETE
 ```Swift
 Requests.delete("http://httpbin.org/delete") { response in
-    print(response.text())
+    print(response.text)
 }
 ```
 #### With data
 ```Swift
 Requests.delete("http://httpbin.org/delete", data: ["key": "value"]) { response in
-    print(response.text())
+    print(response.text)
 }
 ```

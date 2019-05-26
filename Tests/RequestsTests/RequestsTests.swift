@@ -93,6 +93,17 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    func testGetText() {
+        let expectation = XCTestExpectation(description: "Wait for get request")
+        
+        Requests.get("http://httpbin.org/ip") { response in
+            XCTAssertTrue(response.text != "")
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
     func testPostWithData() {
         let expectation = XCTestExpectation(description: "Wait for post request")
         
