@@ -13,7 +13,7 @@ Requests is a lightweight asynchronous HTTP Requests library written in Swift.
 - [PATCH](#patch)
 - [DELETE](#delete)
 
-Further HTTP request methods are going to be implemented soon.
+Further HTTP request methods will be implemented at a later date.
 
 ---
 
