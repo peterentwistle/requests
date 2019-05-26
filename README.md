@@ -119,7 +119,7 @@ Requests.patch("http://httpbin.org/patch", data: ["key": "value"]) { response in
 
 ### DELETE
 ```Swift
-Requests.delete("http://httpbin.org/delete"]) { response in
+Requests.delete("http://httpbin.org/delete") { response in
     print(response.text())
 }
 ```
