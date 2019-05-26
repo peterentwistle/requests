@@ -22,7 +22,6 @@ import XCTest
 import Requests
 
 class RequestsTests: XCTestCase {
-    
     func testGet() {
         let expectation = XCTestExpectation(description: "Wait for get request")
         
