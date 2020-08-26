@@ -110,8 +110,8 @@ class RequestsTests: XCTestCase {
         Requests.post("http://httpbin.org/post", data: ["key": "value"]) { response in
             XCTAssertEqual(200, response.statusCode)
             
-            let json: FormTest = response.json()
-            XCTAssertEqual("value", json.form.key)
+            let formTest: FormTest = response.json()
+            XCTAssertEqual("value", formTest.form.key)
 
             expectation.fulfill()
         }
@@ -130,14 +130,34 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    func testPostWithJsonData() {
+        let expectation = XCTestExpectation(description: "Wait for post request")
+        
+        let test = Test(value: "Test123")
+        
+        let encoder = JSONEncoder()
+        let jsonData = try? encoder.encode(test)
+        
+        Requests.post("http://httpbin.org/post", json: jsonData) { response in
+            XCTAssertEqual(200, response.statusCode)
+            
+            let dataTest: DataTest = response.json()
+            XCTAssertEqual("{\"value\":\"Test123\"}", dataTest.data)
+
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
     func testPutWithData() {
         let expectation = XCTestExpectation(description: "Wait for put request")
         
         Requests.put("http://httpbin.org/put", data: ["key": "value"]) { response in
             XCTAssertEqual(200, response.statusCode)
             
-            let json: DataTest = response.json()
-            XCTAssertEqual("key=value", json.data)
+            let dataTest: DataTest = response.json()
+            XCTAssertEqual("key=value", dataTest.data)
             expectation.fulfill()
         }
         
@@ -216,4 +236,8 @@ fileprivate struct Form: Decodable {
 
 fileprivate struct DataTest: Decodable {
     let data: String
+}
+
+fileprivate struct Test: Codable {
+    let value: String
 }
