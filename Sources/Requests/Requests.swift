@@ -45,6 +45,14 @@ public protocol Requestable {
     ///     - completionHandler: The completion handler to call when the request has completed.
     static func post(_ url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ())
     
+    /// Makes a POST request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - json: The json data to pass in the body of the request.
+    ///     - completionHandler: The completion handler to call when the request has completed.
+    static func post(_ url: String, json: Data?, completionHandler: @escaping (Response) -> ())
+    
     /// Makes a PUT request
     ///
     /// - Parameters:
@@ -71,12 +79,17 @@ public protocol Requestable {
 }
 
 extension Requestable {
-    private static func make(method: HttpMethod, url: String, data: [String: String]?, completionHandler: @escaping (Response) -> ()) {
+    private static func make(method: HttpMethod, url: String, data: [String: String]? = nil, json: Data? = nil, completionHandler: @escaping (Response) -> ()) {
         var request = URLRequest(url: URL(string: url)!)
         request.httpMethod = method.rawValue
         
         if let data = data {
             request.httpBody = data.bodyData()
+        }
+        
+        if let json = json {
+            request.httpBody = json
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -94,6 +107,12 @@ extension Requestable {
     
     public static func post(_ url: String, data: [String : String]? = nil, completionHandler: @escaping (Response) -> ()) {
         make(method: .post, url: url, data: data) { response in
+            completionHandler(response)
+        }
+    }
+    
+    public static func post(_ url: String, json: Data?, completionHandler: @escaping (Response) -> ()) {
+        make(method: .post, url: url, json: json) { response in
             completionHandler(response)
         }
     }
