@@ -23,11 +23,11 @@ Further HTTP request methods will be implemented at a later date.
 import Requests
 
 Requests.get("http://example.com") { response in
-  print(response.text)
+    print(response.text)
 }
 
 Requests.get("http://httpbin.org/ip") { response in
-  print(response.text)
+    print(response.text)
 }
 ```
 
@@ -44,7 +44,7 @@ Requests.get("http://httpbin.org/ip") { response in
 
 ```json
 {
-  "origin": "127.0.0.1"
+    "origin": "127.0.0.1"
 }
 ```
 
@@ -53,13 +53,13 @@ Requests.get("http://httpbin.org/ip") { response in
 import Requests
 
 struct IP: Decodable {
-  var origin: String
+    var origin: String
 }
 
 Requests.get("http://httpbin.org/ip") { response in
-  let json: IP = response.json()
+    let json: IP = response.json()
 
-  print(json.origin)
+    print(json.origin)
 }
 ```
 
@@ -126,6 +126,17 @@ Requests.delete("http://httpbin.org/delete") { response in
 #### With data
 ```Swift
 Requests.delete("http://httpbin.org/delete", data: ["key": "value"]) { response in
+    print(response.text)
+}
+```
+
+---
+## Authentication
+### Bearer Authentication
+```Swift
+let bearerAuthentication = BearerAuthentication(token: "your-token")
+
+Requests.get("https://httpbin.org/bearer", authentication: bearerAuthentication) { response in
     print(response.text)
 }
 ```
