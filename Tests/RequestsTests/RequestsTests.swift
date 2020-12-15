@@ -74,6 +74,7 @@ class RequestsTests: XCTestCase {
     
     func testStatusCodeFromResponse() {
         let expectation = XCTestExpectation(description: "Wait for get request")
+        
         Requests.get("http://httpbin.org/ip") { response in
             XCTAssertEqual(200, response.statusCode)
             expectation.fulfill()
@@ -82,6 +83,7 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    // MARK: GET
     func testGet() {
         let expectation = XCTestExpectation(description: "Wait for get request")
         
@@ -104,6 +106,18 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    func testGetWithBearerAuth() {
+        let expectation = XCTestExpectation(description: "Wait for get request")
+        
+        Requests.get("https://httpbin.org/bearer", authentication: BearerAuthentication(token: "1234")) { response in
+            XCTAssertEqual(200, response.statusCode)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
+    // MARK: POST
     func testPostWithData() {
         let expectation = XCTestExpectation(description: "Wait for post request")
         
@@ -150,6 +164,7 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    // MARK: PUT
     func testPutWithData() {
         let expectation = XCTestExpectation(description: "Wait for put request")
         
@@ -175,6 +190,7 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    // MARK: PATCH
     func testPatchWithData() {
         let expectation = XCTestExpectation(description: "Wait for patch request")
         
@@ -200,6 +216,7 @@ class RequestsTests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    // MARK: DELETE
     func testDeleteWithData() {
         let expectation = XCTestExpectation(description: "Wait for delete request")
         
