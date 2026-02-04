@@ -17,12 +17,11 @@
 //  limitations under the License.
 //
 
-import Foundation
 import XCTest
-import Requests
+@testable import Requests
 
 class RequestsTests: XCTestCase {
-    func testJsonDecoding() {
+    func testJsonDecoding() async {
         struct Post: Codable {
             var userId: Int?
             var id: Int?
@@ -30,216 +29,127 @@ class RequestsTests: XCTestCase {
             var body: String?
         }
         
-        let expectation = XCTestExpectation(description: "Wait for get request")
-        
-        Requests.get("https://jsonplaceholder.typicode.com/posts/1") { response in
-            let jsonResponse: Post? = response.json()
-            XCTAssertNotNil(jsonResponse)
-            XCTAssertEqual(1, jsonResponse!.id)
-            
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        let response = try! await Requests.get("https://jsonplaceholder.typicode.com/posts/1")
+        let jsonResponse: Post = response.json()
+    
+        XCTAssertNotNil(jsonResponse)
+        XCTAssertEqual(1, jsonResponse.id)
     }
     
-    func testIp() {
-        let expectation = XCTestExpectation(description: "Wait for get request")
-        
+    func testIp() async {
         struct IP: Decodable {
             var origin: String
         }
         
-        Requests.get("http://httpbin.org/ip") { response in
-            let json: IP = response.json()
-            XCTAssertTrue(json.origin != "")
-            
-            expectation.fulfill()
-        }
+        let response = try! await Requests.get("http://httpbin.org/ip")
+        let json: IP = response.json()
         
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertTrue(json.origin != "")
     }
     
-    func testHeadersFromResponse() {
-        let expectation = XCTestExpectation(description: "Wait for get request")
+    func testHeadersFromResponse() async {
+        let response = try! await Requests.get("http://httpbin.org/ip")
+        let headers = response.headers
         
-        Requests.get("http://httpbin.org/ip") { response in
-            let headers = response.headers
-            XCTAssertEqual("application/json", headers["Content-Type"])
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual("application/json", headers["Content-Type"])
     }
     
-    func testStatusCodeFromResponse() {
-        let expectation = XCTestExpectation(description: "Wait for get request")
+    func testStatusCodeFromResponse() async {
+        let response = try! await Requests.get("http://httpbin.org/ip")
         
-        Requests.get("http://httpbin.org/ip") { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
     
     // MARK: GET
-    func testGet() {
-        let expectation = XCTestExpectation(description: "Wait for get request")
+    func testGet() async {
+        let response = try! await Requests.get("http://httpbin.org/get")
         
-        Requests.get("http://httpbin.org/get") { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
     
-    func testGetText() {
-        let expectation = XCTestExpectation(description: "Wait for get request")
+    func testGetText() async {
+        let response = try! await Requests.get("http://httpbin.org/ip")
         
-        Requests.get("http://httpbin.org/ip") { response in
-            XCTAssertTrue(response.text != "")
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertTrue(response.text != "")
     }
     
-    func testGetWithBearerAuth() {
-        let expectation = XCTestExpectation(description: "Wait for get request")
+    func testGetWithBearerAuth() async {
+        let response = try! await Requests.get("https://httpbin.org/bearer",
+                                               authentication: BearerAuthentication(token: "1234"))
         
-        Requests.get("https://httpbin.org/bearer", authentication: BearerAuthentication(token: "1234")) { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
     
     // MARK: POST
-    func testPostWithData() {
-        let expectation = XCTestExpectation(description: "Wait for post request")
+    func testPostWithData() async {
+        let response = try! await Requests.post("http://httpbin.org/post", data: ["key": "value"])
+        XCTAssertEqual(200, response.statusCode)
         
-        Requests.post("http://httpbin.org/post", data: ["key": "value"]) { response in
-            XCTAssertEqual(200, response.statusCode)
-            
-            let formTest: FormTest = response.json()
-            XCTAssertEqual("value", formTest.form.key)
-
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        let formTest: FormTest = response.json()
+        XCTAssertEqual("value", formTest.form.key)
     }
     
-    func testPostWithNoData() {
-        let expectation = XCTestExpectation(description: "Wait for post request")
+    func testPostWithNoData() async {
+        let response = try! await Requests.post("http://httpbin.org/post")
         
-        Requests.post("http://httpbin.org/post") { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
     
-    func testPostWithJsonData() {
-        let expectation = XCTestExpectation(description: "Wait for post request")
-        
+    func testPostWithJsonData() async {
         let test = Test(value: "Test123")
-        
         let encoder = JSONEncoder()
         let jsonData = try? encoder.encode(test)
         
-        Requests.post("http://httpbin.org/post", json: jsonData) { response in
-            XCTAssertEqual(200, response.statusCode)
-            
-            let dataTest: DataTest = response.json()
-            XCTAssertEqual("{\"value\":\"Test123\"}", dataTest.data)
-
-            expectation.fulfill()
-        }
+        let response = try! await Requests.post("http://httpbin.org/post", json: jsonData)
+        XCTAssertEqual(200, response.statusCode)
         
-        wait(for: [expectation], timeout: 10.0)
+        let dataTest: DataTest = response.json()
+        XCTAssertEqual("{\"value\":\"Test123\"}", dataTest.data)
     }
     
     // MARK: PUT
-    func testPutWithData() {
-        let expectation = XCTestExpectation(description: "Wait for put request")
+    func testPutWithData() async {
+        let response = try! await Requests.put("http://httpbin.org/put", data: ["key": "value"])
+        XCTAssertEqual(200, response.statusCode)
         
-        Requests.put("http://httpbin.org/put", data: ["key": "value"]) { response in
-            XCTAssertEqual(200, response.statusCode)
-            
-            let dataTest: DataTest = response.json()
-            XCTAssertEqual("key=value", dataTest.data)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        let dataTest: DataTest = response.json()
+        XCTAssertEqual("key=value", dataTest.data)
     }
-    
-    func testPutWithNoData() {
-        let expectation = XCTestExpectation(description: "Wait for put request")
         
-        Requests.put("http://httpbin.org/put") { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
+    func testPutWithNoData() async {
+        let response = try! await  Requests.put("http://httpbin.org/put")
         
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
     
     // MARK: PATCH
-    func testPatchWithData() {
-        let expectation = XCTestExpectation(description: "Wait for patch request")
+    func testPatchWithData() async {
+        let response = try! await Requests.patch("http://httpbin.org/patch", data: ["key": "value"])
+        XCTAssertEqual(200, response.statusCode)
         
-        Requests.patch("http://httpbin.org/patch", data: ["key": "value"]) { response in
-            XCTAssertEqual(200, response.statusCode)
-            
-            let json: DataTest = response.json()
-            XCTAssertEqual("key=value", json.data)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        let json: DataTest = response.json()
+        XCTAssertEqual("key=value", json.data)
     }
     
-    func testPatchWithNoData() {
-        let expectation = XCTestExpectation(description: "Wait for patch request")
+    func testPatchWithNoData() async {
+        let response = try! await Requests.patch("http://httpbin.org/patch")
         
-        Requests.patch("http://httpbin.org/patch") { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
     
     // MARK: DELETE
-    func testDeleteWithData() {
-        let expectation = XCTestExpectation(description: "Wait for delete request")
+    func testDeleteWithData() async {
+        let response = try! await Requests.delete("http://httpbin.org/delete", data: ["key": "value"])
+        XCTAssertEqual(200, response.statusCode)
         
-        Requests.delete("http://httpbin.org/delete", data: ["key": "value"]) { response in
-            XCTAssertEqual(200, response.statusCode)
-            
-            let json: DataTest = response.json()
-            XCTAssertEqual("key=value", json.data)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        let json: DataTest = response.json()
+        XCTAssertEqual("key=value", json.data)
     }
     
-    func testDeleteWithNoData() {
-        let expectation = XCTestExpectation(description: "Wait for delete request")
+    func testDeleteWithNoData() async {
+        let response = try! await Requests.delete("http://httpbin.org/delete")
         
-        Requests.delete("http://httpbin.org/delete") { response in
-            XCTAssertEqual(200, response.statusCode)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 10.0)
+        XCTAssertEqual(200, response.statusCode)
     }
 }
 

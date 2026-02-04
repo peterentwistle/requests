@@ -22,12 +22,12 @@ Further HTTP request methods will be implemented at a later date.
 ```swift
 import Requests
 
-Requests.get("http://example.com") { response in
+func example() async throws {
+    let response = try await Requests.get("http://example.com")
     print(response.text)
-}
-
-Requests.get("http://httpbin.org/ip") { response in
-    print(response.text)
+    
+    let ipResponse = try await Requests.get("http://httpbin.org/ip")
+    print(ipResponse.text)
 }
 ```
 
@@ -56,10 +56,11 @@ struct IP: Decodable {
     var origin: String
 }
 
-Requests.get("http://httpbin.org/ip") { response in
-    let json: IP = response.json()
-
-    print(json.origin)
+func example() async throws {
+    let response = try await Requests.get("http://httpbin.org/ip")
+    let ip: IP = response.json()
+    
+    print(ip.origin)
 }
 ```
 
@@ -73,61 +74,52 @@ Requests.get("http://httpbin.org/ip") { response in
 
 ### GET
 ```Swift
-Requests.get("http://httpbin.org/get") { response in
-    print(response.text)
-}
+let response = try await Requests.get("http://httpbin.org/get")
+print(response.text)
 ```
 
 ### POST
 ```Swift
-Requests.post("http://httpbin.org/post") { response in
-    print(response.text)
-}
+let response = try await Requests.post("http://httpbin.org/post")
+print(response.text)
 ```
 #### With data
 ```Swift
-Requests.post("http://httpbin.org/post", data: ["key": "value"]) { response in
-    print(response.text)
-}
+let response = try await Requests.post("http://httpbin.org/post", data: ["key": "value"])
+print(response.text)
 ```
 
 ### PUT
 ```Swift
-Requests.put("http://httpbin.org/put") { response in
-    print(response.text)
-}
+let response = try await Requests.put("http://httpbin.org/put")
+print(response.text)
 ```
 #### With data
 ```Swift
-Requests.put("http://httpbin.org/put", data: ["key": "value"]) { response in
-    print(response.text)
-}
+let response = try await Requests.put("http://httpbin.org/put", data: ["key": "value"])
+print(response.text)
 ```
 
 ### PATCH
 ```Swift
-Requests.patch("http://httpbin.org/patch") { response in
-    print(response.text)
-}
+let response = try await Requests.patch("http://httpbin.org/patch")
+print(response.text)
 ```
 #### With data
 ```Swift
-Requests.patch("http://httpbin.org/patch", data: ["key": "value"]) { response in
-    print(response.text)
-}
+let response = try await Requests.patch("http://httpbin.org/patch", data: ["key": "value"])
+print(response.text)
 ```
 
 ### DELETE
 ```Swift
-Requests.delete("http://httpbin.org/delete") { response in
-    print(response.text)
-}
+let response = try await Requests.delete("http://httpbin.org/delete")
+print(response.text)
 ```
 #### With data
 ```Swift
-Requests.delete("http://httpbin.org/delete", data: ["key": "value"]) { response in
-    print(response.text)
-}
+let response = try await Requests.delete("http://httpbin.org/delete", data: ["key": "value"])
+print(response.text)
 ```
 
 ---
@@ -136,7 +128,6 @@ Requests.delete("http://httpbin.org/delete", data: ["key": "value"]) { response 
 ```Swift
 let bearerAuthentication = BearerAuthentication(token: "your-token")
 
-Requests.get("https://httpbin.org/bearer", authentication: bearerAuthentication) { response in
-    print(response.text)
-}
+let response = try await Requests.get("https://httpbin.org/bearer", authentication: bearerAuthentication)
+print(response.text)
 ```

@@ -23,7 +23,6 @@ public struct Response {
     public var url: String?
     public var data: Data?
     public var response: URLResponse?
-    public var error: Error?
 }
 
 public protocol Printable {

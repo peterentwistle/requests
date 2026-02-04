@@ -35,8 +35,8 @@ public protocol Requestable {
     /// - Parameters:
     ///     - url: The String representation of the URL to make the request to.
     ///     - authentication: The authentication to be applied to the request
-    ///     - completionHandler: The completion handler to call when the request has completed.
-    static func get(_ url: String, authentication: Authentication?, completionHandler: @escaping (Response) -> ())
+    /// - Returns: A Response object
+    static func get(_ url: String, authentication: Authentication?) async throws -> Response
     
     /// Makes a POST request
     ///
@@ -44,8 +44,8 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
-    ///     - completionHandler: The completion handler to call when the request has completed.
-    static func post(_ url: String, data: [String: String]?, authentication: Authentication?, completionHandler: @escaping (Response) -> ())
+    /// - Returns: A Response object
+    static func post(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
     
     /// Makes a POST request
     ///
@@ -53,8 +53,8 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - json: The json data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
-    ///     - completionHandler: The completion handler to call when the request has completed.
-    static func post(_ url: String, json: Data?, authentication: Authentication?, completionHandler: @escaping (Response) -> ())
+    /// - Returns: A Response object
+    static func post(_ url: String, json: Data?, authentication: Authentication?) async throws -> Response
     
     /// Makes a PUT request
     ///
@@ -62,8 +62,8 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
-    ///     - completionHandler: The completion handler to call when the request has completed.
-    static func put(_ url: String, data: [String: String]?, authentication: Authentication?, completionHandler: @escaping (Response) -> ())
+    /// - Returns: A Response object
+    static func put(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
     
     /// Makes a PATCH request
     ///
@@ -72,7 +72,7 @@ public protocol Requestable {
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
     ///     - completionHandler: The completion handler to call when the request has completed.
-    static func patch(_ url: String, data: [String: String]?, authentication: Authentication?, completionHandler: @escaping (Response) -> ())
+    static func patch(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
     
     /// Makes a DELETE request
     ///
@@ -80,12 +80,16 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
-    ///     - completionHandler: The completion handler to call when the request has completed.
-    static func delete(_ url: String, data: [String: String]?, authentication: Authentication?, completionHandler: @escaping (Response) -> ())
+    /// - Returns: A Response object
+    static func delete(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
 }
 
 extension Requestable {
-    private static func make(method: HttpMethod, url: String, data: [String: String]? = nil, json: Data? = nil, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
+    private static func make(method: HttpMethod,
+                             url: String,
+                             data: [String: String]? = nil,
+                             json: Data? = nil,
+                             authentication: Authentication? = nil) async throws -> Response {
         var request = URLRequest(url: URL(string: url)!)
         request.httpMethod = method.rawValue
         
@@ -102,47 +106,32 @@ extension Requestable {
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let data = data {
-                completionHandler(Response(url: url, data: data, response: response, error: error))
-            }
-        }.resume()
+        let (data, response) = try await URLSession.shared.data(for: request)
+        return (Response(url: url, data: data, response: response))
     }
     
-    public static func get(_ url: String, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
-        make(method: .get, url: url, data: nil, authentication: authentication) { response in
-            completionHandler(response)
-        }
+    public static func get(_ url: String, authentication: Authentication? = nil) async throws -> Response {
+        try await make(method: .get, url: url, authentication: authentication)
     }
     
-    public static func post(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
-        make(method: .post, url: url, data: data, authentication: authentication) { response in
-            completionHandler(response)
-        }
+    public static func post(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
+        try await make(method: .post, url: url, data: data, authentication: authentication)
     }
     
-    public static func post(_ url: String, json: Data?, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
-        make(method: .post, url: url, json: json, authentication: authentication) { response in
-            completionHandler(response)
-        }
+    public static func post(_ url: String, json: Data?, authentication: Authentication? = nil) async throws -> Response {
+        try await make(method: .post, url: url, json: json, authentication: authentication)
     }
     
-    public static func put(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
-        make(method: .put, url: url, data: data, authentication: authentication) { response in
-            completionHandler(response)
-        }
+    public static func put(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
+        try await make(method: .put, url: url, data: data, authentication: authentication)
     }
     
-    public static func patch(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
-        make(method: .patch, url: url, data: data, authentication: authentication) { response in
-            completionHandler(response)
-        }
+    public static func patch(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
+        try await make(method: .patch, url: url, data: data, authentication: authentication)
     }
     
-    public static func delete(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil, completionHandler: @escaping (Response) -> ()) {
-        make(method: .delete, url: url, data: data, authentication: authentication) { response in
-            completionHandler(response)
-        }
+    public static func delete(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
+        try await make(method: .delete, url: url, data: data, authentication: authentication)
     }
 }
 
