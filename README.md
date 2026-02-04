@@ -1,7 +1,7 @@
 
 # Requests
 ![Swift](http://img.shields.io/badge/swift-5-brightgreen.svg)
-[![Build Status](https://travis-ci.org/peterentwistle/requests.svg?branch=master)](https://travis-ci.org/peterentwistle/requests)
+[![Swift](https://github.com/peterentwistle/requests/actions/workflows/swift.yml/badge.svg)](https://github.com/peterentwistle/requests/actions/workflows/swift.yml)
 [![Licence](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/peterentwistle/requests/blob/master/LICENSE)
 
 Requests is a lightweight asynchronous HTTP Requests library written in Swift.
