@@ -1,6 +1,6 @@
 
 # Requests
-![Swift](http://img.shields.io/badge/swift-5-brightgreen.svg)
+![Swift](http://img.shields.io/badge/swift-6-brightgreen.svg)
 [![Swift](https://github.com/peterentwistle/requests/actions/workflows/swift.yml/badge.svg)](https://github.com/peterentwistle/requests/actions/workflows/swift.yml)
 [![Licence](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/peterentwistle/requests/blob/master/LICENSE)
 
@@ -89,9 +89,9 @@ print(response.text)
 let response = try await Requests.post("http://httpbin.org/post", data: ["key": "value"])
 print(response.text)
 ```
-#### With json
+#### With a JSON object
 ```Swift
-struct Test: Codable {
+struct Test: Encodable {
     let value: String
 }
 
@@ -110,9 +110,9 @@ print(response.text)
 let response = try await Requests.put("http://httpbin.org/put", data: ["key": "value"])
 print(response.text)
 ```
-#### With json
+#### With a JSON object
 ```Swift
-struct Test: Codable {
+struct Test: Encodable {
     let value: String
 }
 
@@ -131,9 +131,9 @@ print(response.text)
 let response = try await Requests.patch("http://httpbin.org/patch", data: ["key": "value"])
 print(response.text)
 ```
-#### With json
+#### With a JSON object
 ```Swift
-struct Test: Codable {
+struct Test: Encodable {
     let value: String
 }
 
@@ -152,9 +152,9 @@ print(response.text)
 let response = try await Requests.delete("http://httpbin.org/delete", data: ["key": "value"])
 print(response.text)
 ```
-#### With json
+#### With a JSON object
 ```Swift
-struct Test: Codable {
+struct Test: Encodable {
     let value: String
 }
 
