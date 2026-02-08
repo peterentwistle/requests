@@ -51,11 +51,11 @@ public protocol Requestable {
     ///
     /// - Parameters:
     ///     - url: The String representation of the URL to make the request to.
-    ///     - json: The json data to pass in the body of the request.
+    ///     - json: The json object to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
     /// - Returns: A Response object
-    static func post(_ url: String, json: Data?, authentication: Authentication?) async throws -> Response
-    
+    static func post<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
+        
     /// Makes a PUT request
     ///
     /// - Parameters:
@@ -65,14 +65,32 @@ public protocol Requestable {
     /// - Returns: A Response object
     static func put(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
     
+    /// Makes a PUT request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - json: The json object to pass in the body of the request.
+    ///     - authentication: The authentication to be applied to the request
+    /// - Returns: A Response object
+    static func put<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
+    
     /// Makes a PATCH request
     ///
     /// - Parameters:
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
-    ///     - completionHandler: The completion handler to call when the request has completed.
+    /// - Returns: A Response object
     static func patch(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
+    
+    /// Makes a PATCH request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - json: The json object to pass in the body of the request.
+    ///     - authentication: The authentication to be applied to the request
+    /// - Returns: A Response object
+    static func patch<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
     
     /// Makes a DELETE request
     ///
@@ -82,6 +100,15 @@ public protocol Requestable {
     ///     - authentication: The authentication to be applied to the request
     /// - Returns: A Response object
     static func delete(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
+    
+    /// Makes a DELETE request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - json: The json object to pass in the body of the request.
+    ///     - authentication: The authentication to be applied to the request
+    /// - Returns: A Response object
+    static func delete<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
 }
 
 extension Requestable {
@@ -118,20 +145,36 @@ extension Requestable {
         try await make(method: .post, url: url, data: data, authentication: authentication)
     }
     
-    public static func post(_ url: String, json: Data?, authentication: Authentication? = nil) async throws -> Response {
-        try await make(method: .post, url: url, json: json, authentication: authentication)
+    public static func post<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+        let jsonData = try JSONEncoder().encode(json)
+        return try await make(method: .post, url: url, json: jsonData, authentication: authentication)
     }
     
     public static func put(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
         try await make(method: .put, url: url, data: data, authentication: authentication)
+    }
+
+    public static func put<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+        let jsonData = try JSONEncoder().encode(json)
+        return try await make(method: .put, url: url, json: jsonData, authentication: authentication)
     }
     
     public static func patch(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
         try await make(method: .patch, url: url, data: data, authentication: authentication)
     }
     
+    public static func patch<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+        let jsonData = try JSONEncoder().encode(json)
+        return try await make(method: .patch, url: url, json: jsonData, authentication: authentication)
+    }
+    
     public static func delete(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
         try await make(method: .delete, url: url, data: data, authentication: authentication)
+    }
+    
+    public static func delete<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+        let jsonData = try JSONEncoder().encode(json)
+        return try await make(method: .delete, url: url, json: jsonData, authentication: authentication)
     }
 }
 
@@ -156,3 +199,4 @@ extension URLRequest {
         self.addValue(authentication.authorizationHeader, forHTTPHeaderField: "Authorization")
     }
 }
+

@@ -78,6 +78,7 @@ let response = try await Requests.get("http://httpbin.org/get")
 print(response.text)
 ```
 
+---
 ### POST
 ```Swift
 let response = try await Requests.post("http://httpbin.org/post")
@@ -88,7 +89,17 @@ print(response.text)
 let response = try await Requests.post("http://httpbin.org/post", data: ["key": "value"])
 print(response.text)
 ```
+#### With json
+```Swift
+struct Test: Codable {
+    let value: String
+}
 
+let response = try await Requests.post("http://httpbin.org/post", json: Test(value: "Test123"))
+print(response.text)
+```
+
+---
 ### PUT
 ```Swift
 let response = try await Requests.put("http://httpbin.org/put")
@@ -99,7 +110,17 @@ print(response.text)
 let response = try await Requests.put("http://httpbin.org/put", data: ["key": "value"])
 print(response.text)
 ```
+#### With json
+```Swift
+struct Test: Codable {
+    let value: String
+}
 
+let response = try await Requests.put("http://httpbin.org/put", json: Test(value: "Test123"))
+print(response.text)
+```
+
+---
 ### PATCH
 ```Swift
 let response = try await Requests.patch("http://httpbin.org/patch")
@@ -110,7 +131,17 @@ print(response.text)
 let response = try await Requests.patch("http://httpbin.org/patch", data: ["key": "value"])
 print(response.text)
 ```
+#### With json
+```Swift
+struct Test: Codable {
+    let value: String
+}
 
+let response = try await Requests.patch("http://httpbin.org/patch", json: Test(value: "Test123"))
+print(response.text)
+```
+
+---
 ### DELETE
 ```Swift
 let response = try await Requests.delete("http://httpbin.org/delete")
@@ -119,6 +150,15 @@ print(response.text)
 #### With data
 ```Swift
 let response = try await Requests.delete("http://httpbin.org/delete", data: ["key": "value"])
+print(response.text)
+```
+#### With json
+```Swift
+struct Test: Codable {
+    let value: String
+}
+
+let response = try await Requests.delete("http://httpbin.org/delete", json: Test(value: "Test123"))
 print(response.text)
 ```
 

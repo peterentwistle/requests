@@ -97,10 +97,7 @@ class RequestsTests: XCTestCase {
     
     func testPostWithJsonData() async {
         let test = Test(value: "Test123")
-        let encoder = JSONEncoder()
-        let jsonData = try? encoder.encode(test)
-        
-        let response = try! await Requests.post("http://httpbin.org/post", json: jsonData)
+        let response = try! await Requests.post("http://httpbin.org/post", json: test)
         XCTAssertEqual(200, response.statusCode)
         
         let dataTest: DataTest = response.json()
@@ -122,6 +119,15 @@ class RequestsTests: XCTestCase {
         XCTAssertEqual(200, response.statusCode)
     }
     
+    func testPutWithJsonData() async {
+        let test = Test(value: "Test123")
+        let response = try! await Requests.put("http://httpbin.org/put", json: test)
+        XCTAssertEqual(200, response.statusCode)
+        
+        let dataTest: DataTest = response.json()
+        XCTAssertEqual("{\"value\":\"Test123\"}", dataTest.data)
+    }
+    
     // MARK: PATCH
     func testPatchWithData() async {
         let response = try! await Requests.patch("http://httpbin.org/patch", data: ["key": "value"])
@@ -137,6 +143,15 @@ class RequestsTests: XCTestCase {
         XCTAssertEqual(200, response.statusCode)
     }
     
+    func testPatchWithJsonData() async {
+        let test = Test(value: "Test123")
+        let response = try! await Requests.patch("http://httpbin.org/patch", json: test)
+        XCTAssertEqual(200, response.statusCode)
+        
+        let dataTest: DataTest = response.json()
+        XCTAssertEqual("{\"value\":\"Test123\"}", dataTest.data)
+    }
+    
     // MARK: DELETE
     func testDeleteWithData() async {
         let response = try! await Requests.delete("http://httpbin.org/delete", data: ["key": "value"])
@@ -150,6 +165,15 @@ class RequestsTests: XCTestCase {
         let response = try! await Requests.delete("http://httpbin.org/delete")
         
         XCTAssertEqual(200, response.statusCode)
+    }
+    
+    func testDeleteWithJsonData() async {
+        let test = Test(value: "Test123")
+        let response = try! await Requests.delete("http://httpbin.org/delete", json: test)
+        XCTAssertEqual(200, response.statusCode)
+        
+        let dataTest: DataTest = response.json()
+        XCTAssertEqual("{\"value\":\"Test123\"}", dataTest.data)
     }
 }
 
