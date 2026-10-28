@@ -25,7 +25,12 @@ public protocol Authentication {
 // MARK: - BearerAuthentication
 public struct BearerAuthentication: Authentication {
     public let token: String
-    public var authorizationHeader: String { "Bearer \(token)" }
+    public var authorizationHeader: String {
+        let sanitizedToken = token.replacingOccurrences(of: "\\r\\n|\\r|\\n",
+                                                        with: "",
+                                                        options: .regularExpression)
+        return "Bearer \(sanitizedToken)"
+    }
     
     public init(token: String) {
         self.token = token

@@ -19,6 +19,19 @@
 
 import Foundation
 
+/// A type capable of performing an asynchronous data task for a URL request.
+///
+/// `URLSession` conforms to this protocol, so the live network stack is used by default.
+public protocol URLSessionProtocol {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+extension URLSession: URLSessionProtocol {}
+
+public enum RequestError: Error, Equatable {
+    case invalidURL
+}
+
 public struct Requests {}
 
 private enum HttpMethod: String {
@@ -35,8 +48,13 @@ public protocol Requestable {
     /// - Parameters:
     ///     - url: The String representation of the URL to make the request to.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func get(_ url: String, authentication: Authentication?) async throws -> Response
+    static func get(
+        _ url: String,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a POST request
     ///
@@ -44,8 +62,14 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func post(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
+    static func post(
+        _ url: String,
+        data: [String: String]?,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a POST request
     ///
@@ -53,17 +77,29 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - json: The json object to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func post<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
-        
+    static func post<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
+    
     /// Makes a PUT request
     ///
     /// - Parameters:
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func put(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
+    static func put(
+        _ url: String,
+        data: [String: String]?,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a PUT request
     ///
@@ -71,8 +107,14 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - json: The json object to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func put<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
+    static func put<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a PATCH request
     ///
@@ -80,8 +122,14 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func patch(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
+    static func patch(
+        _ url: String,
+        data: [String: String]?,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a PATCH request
     ///
@@ -89,8 +137,14 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - json: The json object to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func patch<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
+    static func patch<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a DELETE request
     ///
@@ -98,8 +152,14 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - data: The data to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func delete(_ url: String, data: [String: String]?, authentication: Authentication?) async throws -> Response
+    static func delete(
+        _ url: String,
+        data: [String: String]?,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
     
     /// Makes a DELETE request
     ///
@@ -107,21 +167,34 @@ public protocol Requestable {
     ///     - url: The String representation of the URL to make the request to.
     ///     - json: The json object to pass in the body of the request.
     ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
     /// - Returns: A Response object
-    static func delete<T: Encodable>(_ url: String, json: T, authentication: Authentication?) async throws -> Response
+    static func delete<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
 }
 
 extension Requestable {
-    private static func make(method: HttpMethod,
-                             url: String,
-                             data: [String: String]? = nil,
-                             json: Data? = nil,
-                             authentication: Authentication? = nil) async throws -> Response {
-        var request = URLRequest(url: URL(string: url)!)
+    private static func make(
+        method: HttpMethod,
+        url: String,
+        data: [String: String]? = nil,
+        json: Data? = nil,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        guard let url = URL(string: url) else {
+            throw RequestError.invalidURL
+        }
+        var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         
         if let data = data {
             request.httpBody = data.bodyData()
+            request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         }
         
         if let authentication = authentication {
@@ -133,48 +206,155 @@ extension Requestable {
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
-        let (data, response) = try await URLSession.shared.data(for: request)
-        return (Response(url: url, data: data, response: response))
+        let (data, response) = try await session.data(for: request)
+        return (Response(url: url.absoluteString, data: data, response: response))
     }
     
-    public static func get(_ url: String, authentication: Authentication? = nil) async throws -> Response {
-        try await make(method: .get, url: url, authentication: authentication)
+    // MARK: - GET
+    
+    public static func get(
+        _ url: String,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        try await make(
+            method: .get,
+            url: url,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func post(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
-        try await make(method: .post, url: url, data: data, authentication: authentication)
+    // MARK: - POST
+    
+    public static func post(
+        _ url: String,
+        data: [String: String]? = nil,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        try await make(
+            method: .post,
+            url: url,
+            data: data,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func post<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+    public static func post<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
         let jsonData = try JSONEncoder().encode(json)
-        return try await make(method: .post, url: url, json: jsonData, authentication: authentication)
+        return try await make(
+            method: .post,
+            url: url,
+            json: jsonData,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func put(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
-        try await make(method: .put, url: url, data: data, authentication: authentication)
+    // MARK: - PUT
+    
+    public static func put(
+        _ url: String,
+        data: [String: String]? = nil,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        try await make(
+            method: .put,
+            url: url,
+            data: data,
+            authentication: authentication,
+            session: session
+        )
     }
-
-    public static func put<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+    
+    public static func put<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
         let jsonData = try JSONEncoder().encode(json)
-        return try await make(method: .put, url: url, json: jsonData, authentication: authentication)
+        return try await make(
+            method: .put,
+            url: url,
+            json: jsonData,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func patch(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
-        try await make(method: .patch, url: url, data: data, authentication: authentication)
+    // MARK: - PATCH
+    
+    public static func patch(
+        _ url: String,
+        data: [String: String]? = nil,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        try await make(
+            method: .patch,
+            url: url,
+            data: data,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func patch<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+    public static func patch<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
         let jsonData = try JSONEncoder().encode(json)
-        return try await make(method: .patch, url: url, json: jsonData, authentication: authentication)
+        return try await make(
+            method: .patch,
+            url: url,
+            json: jsonData,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func delete(_ url: String, data: [String : String]? = nil, authentication: Authentication? = nil) async throws -> Response {
-        try await make(method: .delete, url: url, data: data, authentication: authentication)
+    // MARK: - DELETE
+    
+    public static func delete(
+        _ url: String,
+        data: [String: String]? = nil,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        try await make(
+            method: .delete,
+            url: url,
+            data: data,
+            authentication: authentication,
+            session: session
+        )
     }
     
-    public static func delete<T: Encodable>(_ url: String, json: T, authentication: Authentication? = nil) async throws -> Response {
+    public static func delete<T: Encodable>(
+        _ url: String,
+        json: T,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
         let jsonData = try JSONEncoder().encode(json)
-        return try await make(method: .delete, url: url, json: jsonData, authentication: authentication)
+        return try await make(
+            method: .delete,
+            url: url,
+            json: jsonData,
+            authentication: authentication,
+            session: session
+        )
     }
 }
 
@@ -189,7 +369,7 @@ extension Dictionary where Key == String, Value == String {
             data.append("\(key)=\(value)")
         }
         
-        return data.joined(separator: "&").data(using: .utf8)!
+        return data.joined(separator: "&").data(using: .utf8) ?? Data()
     }
 }
 
@@ -199,4 +379,3 @@ extension URLRequest {
         self.addValue(authentication.authorizationHeader, forHTTPHeaderField: "Authorization")
     }
 }
-

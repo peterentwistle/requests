@@ -32,4 +32,37 @@ class AuthenticationTests: XCTestCase {
         // Then
         XCTAssertEqual("Bearer 1234", authHeader)
     }
+
+    func testWhenBearerAuthenticationTokenContainsLineBreaks_ThenTheAuthorizationHeaderIsSanitized() {
+        // Given
+        let bearerAuthentication = BearerAuthentication(token: "abc123\r\ndef456")
+
+        // When
+        let authHeader = bearerAuthentication.authorizationHeader
+
+        // Then
+        XCTAssertEqual("Bearer abc123def456", authHeader)
+    }
+
+    func testWhenBearerAuthenticationTokenContainsCarriageReturn_ThenTheAuthorizationHeaderIsSanitized() {
+        // Given
+        let bearerAuthentication = BearerAuthentication(token: "abc123\rdef456")
+
+        // When
+        let authHeader = bearerAuthentication.authorizationHeader
+
+        // Then
+        XCTAssertEqual("Bearer abc123def456", authHeader)
+    }
+
+    func testWhenBearerAuthenticationTokenContainsLineFeed_ThenTheAuthorizationHeaderIsSanitized() {
+        // Given
+        let bearerAuthentication = BearerAuthentication(token: "abc123\ndef456")
+
+        // When
+        let authHeader = bearerAuthentication.authorizationHeader
+
+        // Then
+        XCTAssertEqual("Bearer abc123def456", authHeader)
+    }
 }

@@ -23,42 +23,67 @@ public struct Response {
     public var url: String?
     public var data: Data?
     public var response: URLResponse?
+    
+    public init(
+        url: String? = nil,
+        data: Data? = nil,
+        response: URLResponse? = nil
+    ) {
+        self.url = url
+        self.data = data
+        self.response = response
+    }
+}
+
+/// Errors that can occur during Response processing.
+public enum ResponseError: Error, Equatable {
+    case noData
+    case invalidResponse
 }
 
 public protocol Printable {
-    var text: String { get }
+    var text: String? { get }
 }
 
 public protocol JSONDecodable {
-    func json() -> String
+    func json<T: Decodable>() throws -> T
 }
 
 public protocol HTTPResponse {
     var headers: [String: String] { get }
-    var statusCode: Int { get }
+    var statusCode: Int { get throws }
 }
 
 // MARK: - Printable
 extension Response: Printable {
-    public var text: String {
-        return NSString(data: data!, encoding: String.Encoding.utf8.rawValue)! as String
+    public var text: String? {
+        guard let data = data else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 }
 
 // MARK: - JSONDecodable
 extension Response: JSONDecodable {
-    public func json<T: Decodable>() -> T {
-        return try! JSONDecoder().decode(T.self, from: data!)
+    public func json<T: Decodable>() throws -> T {
+        guard let data = data else {
+            throw ResponseError.noData
+        }
+        return try JSONDecoder().decode(T.self, from: data)
     }
 }
 
 // MARK: - HTTPResponse
 extension Response: HTTPResponse {
     public var headers: [String: String] {
-        return (response as! HTTPURLResponse).allHeaderFields as! [String: String]
+        return (response as? HTTPURLResponse)?.allHeaderFields as? [String: String] ?? [:]
     }
     
     public var statusCode: Int {
-        return (response as! HTTPURLResponse).statusCode
+        get throws {
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw ResponseError.invalidResponse
+            }
+            return httpResponse.statusCode
+        }
     }
 }
