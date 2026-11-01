@@ -17,23 +17,26 @@
 //  limitations under the License.
 //
 
-import XCTest
+import Testing
+import Foundation
 @testable import Requests
 
-class AuthenticationTests: XCTestCase {
+@Suite struct AuthenticationTests {
 
-    func testWhenBearerAuthenticationObjectIsCreatedWithATokenValue_ThenTheCorrectAuthorizationHeaderIsReturned() {
+    // MARK: - Bearer Authentication
+
+    @Test func bearerAuthenticationReturnsCorrectAuthorizationHeader() {
         // Given
         let bearerAuthentication = BearerAuthentication(token: "1234")
-        
+
         // When
         let authHeader = bearerAuthentication.authorizationHeader
-        
+
         // Then
-        XCTAssertEqual("Bearer 1234", authHeader)
+        #expect(authHeader == "Bearer 1234")
     }
 
-    func testWhenBearerAuthenticationTokenContainsLineBreaks_ThenTheAuthorizationHeaderIsSanitized() {
+    @Test func bearerAuthenticationSanitizesLineBreaksInToken() {
         // Given
         let bearerAuthentication = BearerAuthentication(token: "abc123\r\ndef456")
 
@@ -41,10 +44,10 @@ class AuthenticationTests: XCTestCase {
         let authHeader = bearerAuthentication.authorizationHeader
 
         // Then
-        XCTAssertEqual("Bearer abc123def456", authHeader)
+        #expect(authHeader == "Bearer abc123def456")
     }
 
-    func testWhenBearerAuthenticationTokenContainsCarriageReturn_ThenTheAuthorizationHeaderIsSanitized() {
+    @Test func bearerAuthenticationSanitizesCarriageReturnInToken() {
         // Given
         let bearerAuthentication = BearerAuthentication(token: "abc123\rdef456")
 
@@ -52,10 +55,10 @@ class AuthenticationTests: XCTestCase {
         let authHeader = bearerAuthentication.authorizationHeader
 
         // Then
-        XCTAssertEqual("Bearer abc123def456", authHeader)
+        #expect(authHeader == "Bearer abc123def456")
     }
 
-    func testWhenBearerAuthenticationTokenContainsLineFeed_ThenTheAuthorizationHeaderIsSanitized() {
+    @Test func bearerAuthenticationSanitizesLineFeedInToken() {
         // Given
         let bearerAuthentication = BearerAuthentication(token: "abc123\ndef456")
 
@@ -63,6 +66,6 @@ class AuthenticationTests: XCTestCase {
         let authHeader = bearerAuthentication.authorizationHeader
 
         // Then
-        XCTAssertEqual("Bearer abc123def456", authHeader)
+        #expect(authHeader == "Bearer abc123def456")
     }
 }

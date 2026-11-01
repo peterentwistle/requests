@@ -17,10 +17,11 @@
 //  limitations under the License.
 //
 
-import XCTest
+import Testing
+import Foundation
 @testable import Requests
 
-final class RequestsTests: XCTestCase {
+@Suite struct RequestsTests {
     
     // MARK: - Mock session
     
@@ -59,125 +60,155 @@ final class RequestsTests: XCTestCase {
     
     // MARK: - GET
     
-    func testGetReturnsStatusCode() async throws {
+    @Test func getReturnsStatusCode() async throws {
+        // Given
         let session = makeSession(body: Data("{\"id\":1}".utf8), statusCode: 200)
+        
+        // When
         let response = try await Requests.get("http://localhost/posts/1",
                                               session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
+        // Then
+        #expect(try response.statusCode == 200)
     }
     
-    func testGetReturnsURL() async throws {
+    @Test func getReturnsURL() async throws {
+        // Given
         let session = makeSession()
+        
+        // When
         let response = try await Requests.get("http://localhost/posts/1",
                                               session: session)
         
-        XCTAssertEqual("http://localhost/posts/1", response.url)
+        // Then
+        #expect(response.url == "http://localhost/posts/1")
     }
     
-    func testGetReturnsText() async throws {
+    @Test func getReturnsText() async throws {
+        // Given
         let session = makeSession(body: Data("hello world".utf8))
+        
+        // When
         let response = try await Requests.get("http://localhost/",
                                               session: session)
         
-        XCTAssertEqual("hello world", response.text)
+        // Then
+        #expect(response.text == "hello world")
     }
     
-    func testGetReturnsHeaders() async throws {
+    @Test func getReturnsHeaders() async throws {
+        // Given
         let session = makeSession(body: Data(), statusCode: 200, headers: ["Content-Type": "application/json"])
+        
+        // When
         let response = try await Requests.get("http://localhost/",
                                               session: session)
         
-        XCTAssertEqual("application/json", response.headers["Content-Type"])
+        // Then
+        #expect(response.headers["Content-Type"] == "application/json")
     }
     
-    func testGetDecodesJSON() async throws {
+    @Test func getDecodesJSON() async throws {
         struct Post: Codable {
             var id: Int?
             var title: String?
         }
         
+        // Given
         let session = makeSession(body: Data("{\"id\":1,\"title\":\"Hello\"}".utf8))
+        
+        // When
         let response = try await Requests.get("http://localhost/posts/1",
                                               session: session)
         
+        // Then
         let post: Post = try response.json()
-        XCTAssertEqual(1, post.id)
-        XCTAssertEqual("Hello", post.title)
+        #expect(post.id == 1)
+        #expect(post.title == "Hello")
     }
     
-    func testGetSetsHTTPMethod() async throws {
+    @Test func getSetsHTTPMethod() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data(), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         _ = try await Requests.get("http://localhost/",
                                    session: session)
         
-        XCTAssertEqual("GET", capturedRequest?.httpMethod)
+        // Then
+        #expect(capturedRequest?.httpMethod == "GET")
     }
     
-    func testGetAppliesBearerAuthentication() async throws {
+    @Test func getAppliesBearerAuthentication() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data(), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         _ = try await Requests.get("http://localhost/bearer",
                                    authentication: BearerAuthentication(token: "abc123"),
                                    session: session)
         
-        XCTAssertEqual("Bearer abc123", capturedRequest?.value(forHTTPHeaderField: "Authorization"))
+        // Then
+        #expect(capturedRequest?.value(forHTTPHeaderField: "Authorization") == "Bearer abc123")
     }
     
-    func testGetReturnsNonSuccessStatusCode() async throws {
+    @Test func getReturnsNonSuccessStatusCode() async throws {
+        // Given
         let session = makeSession(body: Data(), statusCode: 404)
+        
+        // When
         let response = try await Requests.get("http://localhost/missing",
                                               session: session)
         
-        XCTAssertEqual(404, try response.statusCode)
+        // Then
+        #expect(try response.statusCode == 404)
     }
     
-    func testGetThrowsWhenSessionThrows() async {
+    @Test func getThrowsWhenSessionThrows() async throws {
+        // Given
         let session = MockURLSession { _ in
             throw URLError(.notConnectedToInternet)
         }
         
-        do {
+        await #expect(throws: URLError(.notConnectedToInternet)) {
             _ = try await Requests.get("http://localhost/", session: session)
-            XCTFail("Expected the request to throw")
-        } catch let error as URLError {
-            XCTAssertEqual(.notConnectedToInternet, error.code)
-        } catch {
-            XCTFail("Unexpected error type: \(error)")
         }
     }
     
     // MARK: - POST
     
-    func testPostWithFormData() async throws {
+    @Test func postWithFormData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"form\":{\"key\":\"value\"}}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let response = try await Requests.post("http://localhost/post",
                                                data: ["key": "value"],
                                                session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual("POST", capturedRequest?.httpMethod)
-        XCTAssertEqual("key=value", String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8))
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpMethod == "POST")
+        #expect(String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8) == "key=value")
         
         let formTest: FormTest = try response.json()
-        XCTAssertEqual("value", formTest.form.key)
+        #expect(formTest.form.key == "value")
     }
     
-    func testPostWithJSONData() async throws {
+    @Test func postWithJSONData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
@@ -186,173 +217,211 @@ final class RequestsTests: XCTestCase {
                                           headers: ["Content-Type": "application/json"]))
         }
         
+        // When
         let test = Test(value: "Test123")
         let response = try await Requests.post("http://localhost/post",
                                                json: test,
                                                session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual("application/json", capturedRequest?.value(forHTTPHeaderField: "Content-Type"))
-        XCTAssertEqual(Data("{\"value\":\"Test123\"}".utf8), capturedRequest?.httpBody)
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        #expect(capturedRequest?.httpBody == Data("{\"value\":\"Test123\"}".utf8))
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("raw-body", json.data)
+        #expect(json.data == "raw-body")
     }
     
-    func testPostWithNoData() async throws {
+    @Test func postWithNoData() async throws {
+        // Given
         let session = makeSession(body: Data(), statusCode: 200)
+        
+        // When
         let response = try await Requests.post("http://localhost/post",
                                                session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
+        // Then
+        #expect(try response.statusCode == 200)
     }
     
     // MARK: - PUT
     
-    func testPutWithData() async throws {
+    @Test func putWithData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"data\":\"key=value\"}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let response = try await Requests.put("http://localhost/put",
                                               data: ["key": "value"],
                                               session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual("PUT", capturedRequest?.httpMethod)
-        XCTAssertEqual("key=value", String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8))
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpMethod == "PUT")
+        #expect(String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8) == "key=value")
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("key=value", json.data)
+        #expect(json.data == "key=value")
     }
     
-    func testPutWithNoData() async throws {
+    @Test func putWithNoData() async throws {
+        // Given
         let session = makeSession(body: Data(), statusCode: 200)
+        
+        // When
         let response = try await Requests.put("http://localhost/put",
                                               session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
+        // Then
+        #expect(try response.statusCode == 200)
     }
     
-    func testPutWithJSONData() async throws {
+    @Test func putWithJSONData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"data\":\"raw-body\"}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let test = Test(value: "Test123")
         let response = try await Requests.put("http://localhost/put",
                                               json: test,
                                               session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual(Data("{\"value\":\"Test123\"}".utf8), capturedRequest?.httpBody)
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpBody == Data("{\"value\":\"Test123\"}".utf8))
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("raw-body", json.data)
+        #expect(json.data == "raw-body")
     }
     
     // MARK: - PATCH
     
-    func testPatchWithData() async throws {
+    @Test func patchWithData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"data\":\"key=value\"}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let response = try await Requests.patch("http://localhost/patch",
                                                 data: ["key": "value"],
                                                 session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual("PATCH", capturedRequest?.httpMethod)
-        XCTAssertEqual("key=value", String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8))
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpMethod == "PATCH")
+        #expect(String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8) == "key=value")
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("key=value", json.data)
+        #expect(json.data == "key=value")
     }
     
-    func testPatchWithNoData() async throws {
+    @Test func patchWithNoData() async throws {
+        // Given
         let session = makeSession(body: Data(), statusCode: 200)
+        
+        // When
         let response = try await Requests.patch("http://localhost/patch",
                                                 session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
+        // Then
+        #expect(try response.statusCode == 200)
     }
     
-    func testPatchWithJSONData() async throws {
+    @Test func patchWithJSONData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"data\":\"raw-body\"}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let test = Test(value: "Test123")
         let response = try await Requests.patch("http://localhost/patch",
                                                 json: test,
                                                 session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual(Data("{\"value\":\"Test123\"}".utf8), capturedRequest?.httpBody)
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpBody == Data("{\"value\":\"Test123\"}".utf8))
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("raw-body", json.data)
+        #expect(json.data == "raw-body")
     }
     
     // MARK: - DELETE
     
-    func testDeleteWithData() async throws {
+    @Test func deleteWithData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"data\":\"key=value\"}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let response = try await Requests.delete("http://localhost/delete",
                                                  data: ["key": "value"],
                                                  session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual("DELETE", capturedRequest?.httpMethod)
-        XCTAssertEqual("key=value", String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8))
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpMethod == "DELETE")
+        #expect(String(data: capturedRequest?.httpBody ?? Data(), encoding: .utf8) == "key=value")
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("key=value", json.data)
+        #expect(json.data == "key=value")
     }
     
-    func testDeleteWithNoData() async throws {
+    @Test func deleteWithNoData() async throws {
+        // Given
         let session = makeSession(body: Data(), statusCode: 200)
+        
+        // When
         let response = try await Requests.delete("http://localhost/delete",
                                                  session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
+        // Then
+        #expect(try response.statusCode == 200)
     }
     
-    func testDeleteWithJSONData() async throws {
+    @Test func deleteWithJSONData() async throws {
+        // Given
         var capturedRequest: URLRequest?
         let session = MockURLSession { request in
             capturedRequest = request
             return (Data("{\"data\":\"raw-body\"}".utf8), self.makeHTTPResponse(statusCode: 200))
         }
         
+        // When
         let test = Test(value: "Test123")
         let response = try await Requests.delete("http://localhost/delete",
                                                  json: test,
                                                  session: session)
         
-        XCTAssertEqual(200, try response.statusCode)
-        XCTAssertEqual(Data("{\"value\":\"Test123\"}".utf8), capturedRequest?.httpBody)
+        // Then
+        #expect(try response.statusCode == 200)
+        #expect(capturedRequest?.httpBody == Data("{\"value\":\"Test123\"}".utf8))
         
         let json: DataTest = try response.json()
-        XCTAssertEqual("raw-body", json.data)
+        #expect(json.data == "raw-body")
     }
+   
     // MARK: - Response Error Tests
     
-    func testStatusCodeThrowsWhenNotHTTP() async throws {
+    @Test func statusCodeThrowsWhenNotHTTP() {
+        // Given
         let url = URL(string: "file:///tmp/test.txt")!
         let response = Response(url: url.absoluteString,
                                 data: nil,
@@ -361,80 +430,70 @@ final class RequestsTests: XCTestCase {
                                                       expectedContentLength: 0,
                                                       textEncodingName: nil))
         
-        do {
+        // Then
+        #expect(throws: ResponseError.invalidResponse) {
             _ = try response.statusCode
-            XCTFail("Expected statusCode to throw error")
-        } catch let error as ResponseError {
-            XCTAssertEqual(error, .invalidResponse)
-        } catch {
-            XCTFail("Unexpected error type: \(error)")
         }
     }
-
-    func testJSONThrowsWhenNoData() async throws {
+    
+    @Test func jsonThrowsWhenNoData() {
+        // Given
         let response = Response(url: "http://localhost",
                                 data: nil,
                                 response: nil)
-        
-        do {
+        // Then
+        #expect(throws: ResponseError.noData) {
             let _: DataTest = try response.json()
-            XCTFail("Expected json() to throw error")
-        } catch let error as ResponseError {
-            XCTAssertEqual(error, .noData)
-        } catch {
-            XCTFail("Unexpected error type: \(error)")
         }
     }
-
-    func testJSONThrowsOnMalformedJSON() async throws {
+    
+    @Test func jsonThrowsOnMalformedJSON() {
+        // Given
         let response = Response(url: "http://localhost",
                                 data: Data("invalid json".utf8),
                                 response: nil)
         
-        do {
+        // Then
+        #expect(throws: DecodingError.self) {
             let _: DataTest = try response.json()
-            XCTFail("Expected json() to throw error")
-        } catch is DecodingError {
-            // Success
-        } catch {
-            XCTFail("Unexpected error type: \(error)")
         }
     }
-
-    func testHeadersReturnsEmptyWhenResponseIsNil() async {
+    
+    @Test func headersReturnsEmptyWhenResponseIsNil() async {
+        // Given
         let response = Response(url: "http://localhost",
                                 data: nil,
                                 response: nil)
         
-        XCTAssertEqual(response.headers, [:])
+        // Then
+        #expect(response.headers == [:])
     }
-
+    
     // MARK: - Edge Case Tests
-
-    func testDictionaryBodyDataWithEmptyDictionary() {
+    
+    @Test func dictionaryBodyDataWithEmptyDictionary() {
+        // Given
         let dict: [String: String] = [:]
         let data = dict.bodyData()
         
-        XCTAssertTrue(data.isEmpty)
+        // Then
+        #expect(data.isEmpty)
     }
-
-    func testDictionaryBodyDataWithSpecialCharacters() {
+    
+    @Test func dictionaryBodyDataWithSpecialCharacters() {
+        // Given
         let dict = ["key": "val&ue"]
         let data = dict.bodyData()
         
-        XCTAssertEqual(String(data: data, encoding: .utf8), "key=val&ue")
+        // Then
+        #expect(String(data: data, encoding: .utf8) == "key=val&ue")
     }
-
+    
     // MARK: - invalidURL Test
-
-    func testGetWithInvalidURL() async {
-        do {
+    
+    @Test func getWithInvalidURL() async throws {
+        await #expect(throws: RequestError.invalidURL) {
             _ = try await Requests.get("", session: makeSession())
-            XCTFail("Expected the request to throw an error for an invalid URL")
-        } catch let error as RequestError {
-            XCTAssertEqual(error, .invalidURL)
-        } catch {
-            XCTFail("Unexpected error type: \(error)")
         }
     }
 }

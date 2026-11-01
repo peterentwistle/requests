@@ -19,7 +19,7 @@
 
 import Foundation
 
-public struct Response {
+public struct Response: Sendable {
     public var url: String?
     public var data: Data?
     public var response: URLResponse?
