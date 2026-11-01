@@ -21,7 +21,7 @@ import Testing
 import Foundation
 @testable import Requests
 
-@Suite struct AuthenticationTests {
+struct AuthenticationTests {
 
     // MARK: - Bearer Authentication
 

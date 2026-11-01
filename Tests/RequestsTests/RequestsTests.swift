@@ -21,7 +21,7 @@ import Testing
 import Foundation
 @testable import Requests
 
-@Suite struct RequestsTests {
+struct RequestsTests {
     
     // MARK: - Mock session
     
