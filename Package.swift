@@ -23,7 +23,8 @@ import PackageDescription
 let package = Package(
     name: "Requests",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v13),
+        .iOS(.v15)
     ],
     products: [
         .library(

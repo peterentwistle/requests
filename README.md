@@ -1,10 +1,47 @@
 
 # Requests
-![Swift](http://img.shields.io/badge/swift-6-brightgreen.svg)
+![Swift](https://img.shields.io/badge/swift-6-brightgreen.svg)
 [![Swift](https://github.com/peterentwistle/requests/actions/workflows/swift.yml/badge.svg)](https://github.com/peterentwistle/requests/actions/workflows/swift.yml)
 [![Licence](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/peterentwistle/requests/blob/master/LICENSE)
 
 Requests is a lightweight asynchronous HTTP Requests library written in Swift.
+
+## Installation
+
+### Swift Package Manager
+
+Add `Requests` to your `Package.swift`:
+
+```swift
+import PackageDescription
+
+let package = Package(
+    name: "YourPackage",
+    dependencies: [
+        .package(url: "https://github.com/peterentwistle/requests", from: "2.0.0"),
+    ],
+    targets: [
+        .target(
+            name: "YourPackage",
+            dependencies: [
+                .product(name: "Requests", package: "requests"),
+            ]
+        ),
+    ]
+)
+```
+
+Then import the module in the code that needs it:
+
+```swift
+import Requests
+```
+
+You can also add it from the command line:
+
+```bash
+swift package add-dependency https://github.com/peterentwistle/requests
+```
 
 #### Currently supported HTTP request methods
 - [GET](#get)
@@ -23,15 +60,15 @@ Further HTTP request methods will be implemented at a later date.
 import Requests
 
 func example() async throws {
-    let response = try await Requests.get("http://example.com")
+    let response = try await Requests.get("https://example.com")
     print(response.text)
     
-    let ipResponse = try await Requests.get("http://httpbin.org/ip")
+    let ipResponse = try await Requests.get("https://httpbin.org/ip")
     print(ipResponse.text)
 }
 ```
 
-### Output
+### Basic usage output
 ```html
 <!doctype html>
 <html>
@@ -57,14 +94,14 @@ struct IP: Decodable {
 }
 
 func example() async throws {
-    let response = try await Requests.get("http://httpbin.org/ip")
-    let ip: IP = response.json()
+    let response = try await Requests.get("https://httpbin.org/ip")
+    let ip: IP = try response.json()
     
     print(ip.origin)
 }
 ```
 
-### Output
+### JSON decoding output
 ```
 127.0.0.1
 ```
@@ -74,19 +111,20 @@ func example() async throws {
 
 ### GET
 ```Swift
-let response = try await Requests.get("http://httpbin.org/get")
+let response = try await Requests.get("https://httpbin.org/get")
 print(response.text)
 ```
 
 ---
 ### POST
 ```Swift
-let response = try await Requests.post("http://httpbin.org/post")
+let response = try await Requests.post("https://httpbin.org/post")
 print(response.text)
 ```
 #### With data
 ```Swift
-let response = try await Requests.post("http://httpbin.org/post", data: ["key": "value"])
+let response = try await Requests.post("https://httpbin.org/post",
+                                       data: ["key": "value"])
 print(response.text)
 ```
 #### With a JSON object
@@ -95,19 +133,21 @@ struct Test: Encodable {
     let value: String
 }
 
-let response = try await Requests.post("http://httpbin.org/post", json: Test(value: "Test123"))
+let response = try await Requests.post("https://httpbin.org/post",
+                                       json: Test(value: "Test123"))
 print(response.text)
 ```
 
 ---
 ### PUT
 ```Swift
-let response = try await Requests.put("http://httpbin.org/put")
+let response = try await Requests.put("https://httpbin.org/put")
 print(response.text)
 ```
 #### With data
 ```Swift
-let response = try await Requests.put("http://httpbin.org/put", data: ["key": "value"])
+let response = try await Requests.put("https://httpbin.org/put",
+                                      data: ["key": "value"])
 print(response.text)
 ```
 #### With a JSON object
@@ -116,19 +156,21 @@ struct Test: Encodable {
     let value: String
 }
 
-let response = try await Requests.put("http://httpbin.org/put", json: Test(value: "Test123"))
+let response = try await Requests.put("https://httpbin.org/put",
+                                      json: Test(value: "Test123"))
 print(response.text)
 ```
 
 ---
 ### PATCH
 ```Swift
-let response = try await Requests.patch("http://httpbin.org/patch")
+let response = try await Requests.patch("https://httpbin.org/patch")
 print(response.text)
 ```
 #### With data
 ```Swift
-let response = try await Requests.patch("http://httpbin.org/patch", data: ["key": "value"])
+let response = try await Requests.patch("https://httpbin.org/patch",
+                                        data: ["key": "value"])
 print(response.text)
 ```
 #### With a JSON object
@@ -137,19 +179,21 @@ struct Test: Encodable {
     let value: String
 }
 
-let response = try await Requests.patch("http://httpbin.org/patch", json: Test(value: "Test123"))
+let response = try await Requests.patch("https://httpbin.org/patch",
+                                       json: Test(value: "Test123"))
 print(response.text)
 ```
 
 ---
 ### DELETE
 ```Swift
-let response = try await Requests.delete("http://httpbin.org/delete")
+let response = try await Requests.delete("https://httpbin.org/delete")
 print(response.text)
 ```
 #### With data
 ```Swift
-let response = try await Requests.delete("http://httpbin.org/delete", data: ["key": "value"])
+let response = try await Requests.delete("https://httpbin.org/delete",
+                                         data: ["key": "value"])
 print(response.text)
 ```
 #### With a JSON object
@@ -158,7 +202,8 @@ struct Test: Encodable {
     let value: String
 }
 
-let response = try await Requests.delete("http://httpbin.org/delete", json: Test(value: "Test123"))
+let response = try await Requests.delete("https://httpbin.org/delete",
+                                         json: Test(value: "Test123"))
 print(response.text)
 ```
 
@@ -168,6 +213,70 @@ print(response.text)
 ```Swift
 let bearerAuthentication = BearerAuthentication(token: "your-token")
 
-let response = try await Requests.get("https://httpbin.org/bearer", authentication: bearerAuthentication)
+let response = try await Requests.get("https://httpbin.org/bearer",
+                                      authentication: bearerAuthentication)
+print(response.text)
+```
+
+---
+## Response
+
+Every request returns a `Response` object. Its body can be read as text (`print(response.text)`) or decoded from JSON (`let value = try response.json()`), and it also exposes the raw `url`, `data`, and underlying `response` fields. The HTTP response can be inspected through its status code and headers.
+
+### Status code
+```swift
+let response = try await Requests.get("https://httpbin.org/get")
+
+let statusCode = try response.statusCode
+print(statusCode)  // 200
+```
+
+### Headers
+```swift
+let response = try await Requests.get("https://httpbin.org/get")
+
+let contentType = response.headers["Content-Type"]
+print(contentType)  // "application/json"
+```
+
+### Errors
+
+`json()` throws `ResponseError.noData` when there is no body to decode, and `statusCode` throws `ResponseError.invalidResponse` when the underlying response is not an `HTTPURLResponse`. A malformed URL string passed to a request throws `RequestError.invalidURL`.
+
+```swift
+import Requests
+
+func example() async throws {
+    do {
+        let response = try await Requests.get("https://httpbin.org/missing")
+        print(try response.statusCode)  // throws if the response is not HTTP
+    } catch let error as ResponseError {
+        print("Response error: \(error)")
+    } catch {
+        print("Request error: \(error)")  // e.g. RequestError.invalidURL, URLError, ...
+    }
+}
+```
+
+---
+## Testability
+
+All request methods accept a `session:` parameter (defaulting to `URLSession.shared`). Any type conforming to `URLSessionProtocol` can be injected, which is handy for testing without making real network requests:
+
+```swift
+struct MockSession: URLSessionProtocol {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let response = HTTPURLResponse(
+            url: URL(string: "https://localhost/")!,
+            statusCode: 200,
+            httpVersion: "HTTP/1.1",
+            headerFields: [:]
+        )!
+        return (Data(), response)
+    }
+}
+
+let response = try await Requests.get("https://httpbin.org/get",
+                                      session: MockSession())
 print(response.text)
 ```
