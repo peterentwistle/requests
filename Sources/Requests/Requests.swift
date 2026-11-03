@@ -40,6 +40,7 @@ private enum HttpMethod: String {
     case put = "PUT"
     case patch = "PATCH"
     case delete = "DELETE"
+    case head = "HEAD"
 }
 
 public protocol Requestable {
@@ -172,6 +173,19 @@ public protocol Requestable {
     static func delete<T: Encodable>(
         _ url: String,
         json: T,
+        authentication: Authentication?,
+        session: any URLSessionProtocol
+    ) async throws -> Response
+    
+    /// Makes a HEAD request
+    ///
+    /// - Parameters:
+    ///     - url: The String representation of the URL to make the request to.
+    ///     - authentication: The authentication to be applied to the request
+    ///     - session: The URL session to use for the request (defaults to `.shared`)
+    /// - Returns: A Response object
+    static func head(
+        _ url: String,
         authentication: Authentication?,
         session: any URLSessionProtocol
     ) async throws -> Response
@@ -352,6 +366,21 @@ extension Requestable {
             method: .delete,
             url: url,
             json: jsonData,
+            authentication: authentication,
+            session: session
+        )
+    }
+    
+    // MARK: - HEAD
+    
+    public static func head(
+        _ url: String,
+        authentication: Authentication? = nil,
+        session: any URLSessionProtocol = URLSession.shared
+    ) async throws -> Response {
+        try await make(
+            method: .head,
+            url: url,
             authentication: authentication,
             session: session
         )

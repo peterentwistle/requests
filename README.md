@@ -49,6 +49,7 @@ swift package add-dependency https://github.com/peterentwistle/requests
 - [PUT](#put)
 - [PATCH](#patch)
 - [DELETE](#delete)
+- [HEAD](#head)
 
 Further HTTP request methods will be implemented at a later date.
 
@@ -205,6 +206,12 @@ struct Test: Encodable {
 let response = try await Requests.delete("https://httpbin.org/delete",
                                          json: Test(value: "Test123"))
 print(response.text)
+```
+
+### HEAD
+```Swift
+let response = try await Requests.head("https://httpbin.org/head")
+print(response.headers)
 ```
 
 ---

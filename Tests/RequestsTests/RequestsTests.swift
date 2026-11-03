@@ -74,14 +74,14 @@ struct RequestsTests {
     
     @Test func getReturnsURL() async throws {
         // Given
+        let url = "http://localhost/posts/1"
         let session = makeSession()
         
         // When
-        let response = try await Requests.get("http://localhost/posts/1",
-                                              session: session)
+        let response = try await Requests.get(url, session: session)
         
         // Then
-        #expect(response.url == "http://localhost/posts/1")
+        #expect(response.url == url)
     }
     
     @Test func getReturnsText() async throws {
@@ -417,7 +417,100 @@ struct RequestsTests {
         let json: DataTest = try response.json()
         #expect(json.data == "raw-body")
     }
-   
+    
+    // MARK: - HEAD
+    
+    @Test func headReturnsStatusCode() async throws {
+        // Given
+        let session = makeSession(statusCode: 200)
+        
+        // When
+        let response = try await Requests.head("http://localhost/head",
+                                               session: session)
+        
+        // Then
+        #expect(try response.statusCode == 200)
+    }
+    
+    @Test func headReturnsURL() async throws {
+        // Given
+        let url = "http://localhost/head"
+        let session = makeSession()
+        
+        // When
+        let response = try await Requests.head(url, session: session)
+        
+        // Then
+        #expect(response.url == url)
+    }
+    
+    @Test func headReturnsHeaders() async throws {
+        // Given
+        let headers = ["X-Test-Header": "TestValue"]
+        let session = makeSession(headers: headers)
+        
+        // When
+        let response = try await Requests.head("http://localhost/head", session: session)
+        
+        // Then
+        #expect(response.headers == headers)
+    }
+    
+    @Test func headSetsHTTPMethod() async throws {
+        // Given
+        var capturedRequest: URLRequest?
+        let session = MockURLSession { request in
+            capturedRequest = request
+            return (Data(), self.makeHTTPResponse(statusCode: 200))
+        }
+        
+        // When
+        _ = try await Requests.head("http://localhost/head", session: session)
+        
+        // Then
+        #expect(capturedRequest?.httpMethod == "HEAD")
+    }
+    
+    @Test func headAppliesBearerAuthentication() async throws {
+        // Given
+        let token = "abc123"
+        let authentication = BearerAuthentication(token: token)
+        var capturedRequest: URLRequest?
+        let session = MockURLSession { request in
+            capturedRequest = request
+            return (Data(), self.makeHTTPResponse(statusCode: 200))
+        }
+        
+        // When
+        _ = try await Requests.head("http://localhost/head", authentication: authentication, session: session)
+        
+        // Then
+        #expect(capturedRequest?.value(forHTTPHeaderField: "Authorization") == "Bearer \(token)")
+    }
+    
+    @Test func headReturnsNonSuccessStatusCode() async throws {
+        // Given
+        let session = makeSession(statusCode: 404)
+        
+        // When
+        let response = try await Requests.head("http://localhost/head", session: session)
+        
+        // Then
+        #expect(try response.statusCode == 404)
+    }
+    
+    @Test func headThrowsWhenSessionThrows() async throws {
+        // Given
+        let session = MockURLSession { _ in
+            throw URLError(.notConnectedToInternet)
+        }
+        
+        // When/Then
+        await #expect(throws: URLError(.notConnectedToInternet)) {
+            _ = try await Requests.head("http://localhost/", session: session)
+        }
+    }
+    
     // MARK: - Response Error Tests
     
     @Test func statusCodeThrowsWhenNotHTTP() {
