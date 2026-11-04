@@ -3,8 +3,17 @@ opt_in_rules:
 disabled_rules:
 
 excluded:
+  - .build/
+  - DerivedData/
+  - .swiftpm/
   - Sources/ThirdParty
   - Tests/ThirdParty
+
+file_length:
+  warning: 650
+
+type_body_length:
+  warning: 350
 
 trailing_whitespace:
   ignores_empty_lines: true
