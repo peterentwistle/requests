@@ -30,27 +30,15 @@ let package = Package(
         .library(
             name: "Requests",
             targets: ["Requests"]
-        ),
-    ],
-    dependencies: [
-        .package(url: "https://github.com/realm/SwiftLint", from: "0.65.0"),
+        )
     ],
     targets: [
         .target(
-            name: "Requests",
-            swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency")
-            ],
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
-            ]
+            name: "Requests"
         ),
         .testTarget(
             name: "RequestsTests",
-            dependencies: ["Requests"],
-            swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency")
-            ]
-        ),
+            dependencies: ["Requests"]
+        )
     ]
 )

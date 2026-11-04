@@ -591,18 +591,18 @@ struct RequestsTests {
     }
 }
 
-fileprivate struct FormTest: Decodable {
+private struct FormTest: Decodable {
     let form: Form
 }
 
-fileprivate struct Form: Decodable {
+private struct Form: Decodable {
     let key: String
 }
 
-fileprivate struct Test: Encodable {
+private struct Test: Encodable {
     let value: String
 }
 
-fileprivate struct DataTest: Decodable {
+private struct DataTest: Decodable {
     let data: String
 }

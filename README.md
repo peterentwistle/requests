@@ -287,3 +287,42 @@ let response = try await Requests.get("https://httpbin.org/get",
                                       session: MockSession())
 print(response.text)
 ```
+
+---
+## Development
+
+```bash
+swift build        # Build the package
+swift test         # Run all tests
+```
+
+### Linting
+
+Code style is enforced with [SwiftLint](https://github.com/realm/SwiftLint). Install it locally with Homebrew:
+
+```bash
+brew install swiftlint
+```
+
+Then run the hook installer once (it wires the shared hook and installs swiftlint if needed):
+
+```bash
+./scripts/install-hooks.sh
+```
+
+This activates a `pre-commit` hook (`.githooks/pre-commit`) that runs
+`swiftlint --strict` on every commit, so style issues are caught locally before they reach CI. 
+
+To lint on demand:
+
+```bash
+swiftlint lint --strict
+```
+
+SwiftLint is configured in `.swiftlint.yml` and excluded paths (`.build/`, `DerivedData/`,
+`.swiftpm/`) keep it fast. The same `swiftlint --strict` step also runs in CI
+(`.github/workflows/swift.yml`). To disable the hook locally:
+
+```bash
+git config --unset core.hooksPath
+```
